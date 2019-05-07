@@ -106,9 +106,7 @@ float commande_to_PWM(float commande)
   return commande/vitesse_max*PWM_max;
 }
 
-void name(/* arguments */) {
-  /* code */
-} asser(float consigne_lin, float consigne_rot)
+void asser(float consigne_lin, float consigne_rot)
 {
 
   position_lin=calcul_position_lin(compteur);
