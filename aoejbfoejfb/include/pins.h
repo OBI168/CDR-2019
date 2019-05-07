@@ -2,9 +2,9 @@
 #define CodeurDroit_B   21
 #define CodeurGauche_A  20
 #define CodeurGauche_B  18
-#define MoteurDroit_1    33
-#define MoteurDroit_2    35
+#define MoteurDroit_1   33
+#define MoteurDroit_2   35
 #define PWMMoteurDroit  12
-#define MoteurGauche_1   39
-#define MoteurGauche_2   37
+#define MoteurGauche_1  39
+#define MoteurGauche_2  37
 #define PWMMoteurGauche 11

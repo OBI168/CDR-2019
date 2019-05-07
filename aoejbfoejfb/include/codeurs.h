@@ -1,8 +1,13 @@
 #include <Arduino.h>
 #include <pins.h>
+#include <parametres.h>
 
-double CompteurDroit;
-double CompteurGauche;
+float CompteurDroit;
+float CompteurGauche;
+
+float compteur_ticks[2]={0,0};
+
+
 
 void InterruptionCodeurDroit_A()
 {
