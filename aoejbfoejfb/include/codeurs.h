@@ -2,12 +2,7 @@
 #include <pins.h>
 #include <parametres.h>
 
-float CompteurDroit;
-float CompteurGauche;
-
-float compteur_ticks[2]={0,0};
-
-
+float compteur_ticks[2];
 
 void InterruptionCodeurDroit_A()
 {
@@ -20,18 +15,18 @@ void InterruptionCodeurDroit_A()
     }
     else
     {
-      CompteurDroit++;//avance
+      compteur_ticks[1]++;//avance
     }
   }
   else
   {
      if (Etat_A==0)
     {
-      CompteurDroit++;//avance
+      compteur_ticks[1]++;//avance
     }
     else
     {
-      CompteurDroit--;//Recule
+      compteur_ticks[1]--;//Recule
     }
   }
 }
@@ -44,22 +39,22 @@ void InterruptionCodeurDroit_B()
   {
     if (Etat_B==0)
     {
-      CompteurDroit++;//avance
+      compteur_ticks[1]++;//avance
     }
     else
     {
-      CompteurDroit--;//Recule
+      compteur_ticks[1]--;//Recule
     }
   }
   else
   {
      if (Etat_B==0)
     {
-      CompteurDroit--;//Recule
+      compteur_ticks[1]--;//Recule
     }
     else
     {
-      CompteurDroit++;//avance
+      compteur_ticks[1]++;//avance
     }
   }
 }
@@ -72,22 +67,22 @@ void InterruptionCodeurGauche_A()
   {
     if (Etat_A==0)
     {
-      CompteurGauche--;//Recule
+      compteur_ticks[0]--; //Recule
     }
     else
     {
-      CompteurGauche++;//avance
+      compteur_ticks[0]++; //avance
     }
   }
   else
   {
      if (Etat_A==0)
     {
-      CompteurGauche++;//avance
+      compteur_ticks[0]++;//avance
     }
     else
     {
-      CompteurGauche--;//Recule
+      compteur_ticks[0]--;//Recule
     }
   }
 }
@@ -100,22 +95,22 @@ void InterruptionCodeurGauche_B()
   {
     if (Etat_B==0)
     {
-      CompteurGauche++;//avance
+      compteur_ticks[0]++; //avance
     }
     else
     {
-      CompteurGauche--;//Recule
+      compteur_ticks[0]--; //Recule
     }
   }
   else
   {
      if (Etat_B==0)
     {
-      CompteurGauche--;//Recule
+      compteur_ticks[0]--; //Recule
     }
     else
     {
-      CompteurGauche++;//avance
+      compteur_ticks[0]++; //avance
     }
   }
 }
