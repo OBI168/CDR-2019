@@ -29,27 +29,26 @@ float commande_mot_D[2]={0,0}; //commande du moteur droit
 float commande_mot_G[2]={0,0}; //commande du moteur gauche
 float commande_PWM_D[2]={0,0};  // commande du moteur droit en PWM
 float commande_PWM_G[2]={0,0};  // commande du moteur gauche en PWM
+float cm[0];
 
 float erreur_lin[2]={0,0}; // liste qui contient l'erreur linéaire à l'instant n et n-1
 float erreur_rot[2]={0,0};  // liste qui contient l'erreur de rotation à l'instant n et n-1
 
-float consigne_lin=70; // consigne de la distance rectiligne en cm
+float consigne_lin=10; // consigne de la distance rectiligne en cm
 float consigne_rot=0; // cosigne d'angle en degré
 
-
+float consigne_ticks = consigne_lin/resolution;
 
 
 /*
 convertit les ticks en cm
 */
-float tick_to_cm(float ticks[2])
+void tick_to_cm(float ticks[2], float cm[2])
 {
-  float cm[2];
   for(int i=0; i>2; i++)
   {
     cm[i]=resolution*ticks[i];
   }
-  return *cm;
 }
 
 /*
@@ -57,7 +56,8 @@ calcul l'angle de rotation du robot en
 */
 float calcul_position_rot(float liste[2])
 {
-  return 180*(atan(liste[2]-liste[1])/entraxe)/pi;
+  return (liste[2]+liste[1])/2;
+  //180*(atan(liste[2]-liste[1])/entraxe)/pi;
 }
 
 /*
@@ -65,7 +65,7 @@ calcul la position du robot
 */
 float calcul_position_lin(float liste[2])
 {
-  return (liste[2]-liste[1])/2;
+  return liste[2]-liste[1];
 }
 
 /*
@@ -111,7 +111,7 @@ float saturation_acc(float liste[2])
   float acceleration = calcul_derive(&liste[2]);
   if (acceleration>acceleration_max)
   {
-    return acceleration_max;
+    return liste[0];
   }
   else
   {
@@ -129,15 +129,17 @@ void deplacement()
 
 
 
+
+
       // float commande_lin;
       // float commande_rot;
 
-      float position_lin_cm[2];
 
-      //position_lin_cm = tick_to_cm(compteur_ticks[2]);
 
-      position_lin=calcul_position_lin(compteur);
-      position_rot= calcul_position_rot(compteur);
+      //tick_to_cm(compteur_ticks, cm);
+
+      position_lin=calcul_position_lin(compteur_ticks);
+      position_rot= calcul_position_rot(compteur_ticks);
 
       new_erreur_lin = calcul_erreur(consigne_lin, position_lin);
       new_erreur_rot = calcul_erreur(consigne_rot, position_rot);
@@ -154,8 +156,8 @@ void deplacement()
       commande_lin = Kp_lin*erreur_lin[1] + Ki_lin*int_erreur_lin + Kd_lin*der_erreur_lin;
       commande_rot = Kp_rot*erreur_rot[1] + Ki_rot*int_erreur_rot + Kd_rot*der_erreur_rot;
 
-      commande_mot_Dt = constrain(commande_lin + commande_rot,-vitesse_max,vitesse_max);
-      commande_mot_Gt = constrain(commande_lin + commande_rot,-vitesse_max,vitesse_max);
+      commande_mot_Dt = constrain(commande_lin + commande_rot/2,-vitesse_max,vitesse_max);
+      commande_mot_Gt = constrain(commande_lin - commande_rot/2,-vitesse_max,vitesse_max);
 
       maj_data(commande_mot_D, commande_mot_Dt);
       maj_data(commande_mot_G, commande_mot_Gt);
@@ -163,8 +165,8 @@ void deplacement()
       commande_mot_Dt = saturation_acc(commande_mot_D);
       commande_mot_Gt = saturation_acc(commande_mot_G);
 
-      commande_PWM_Dt = commande_to_PWM(commande_mot_Dt);
-      commande_PWM_Gt = commande_to_PWM(commande_mot_Gt);
+      commande_PWM_Dt = constrain(commande_to_PWM(commande_mot_Dt), PWM_min, PWM_max);
+      commande_PWM_Gt = constrain(commande_to_PWM(commande_mot_Gt), PWM_min, PWM_max);
 
       maj_data(commande_PWM_D, commande_PWM_Dt);
       maj_data(commande_PWM_G, commande_PWM_Gt);

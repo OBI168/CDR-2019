@@ -22,9 +22,12 @@ void setup()
 
 void loop()
 {
-  Serial.print(compteur_ticks[1]);
+
+  Serial.print(consigne_ticks);
   Serial.print("  ");
-  Serial.print(compteur[1]);
+  Serial.print(compteur_ticks[0]);
+  Serial.print("  ");
+  Serial.print(compteur_ticks[1]);
   Serial.print("  ");
   Serial.print(erreur_lin[1]);
   Serial.print("  ");
