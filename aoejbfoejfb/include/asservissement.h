@@ -42,7 +42,7 @@ float consigne_rot=0; // cosigne d'angle en degré
 /*
 convertit les ticks en cm
 */
-float tick_to_cm(float *ticks[2])
+float tick_to_cm(float ticks[2])
 {
   float cm[2];
   for(int i=0; i>2; i++)
@@ -134,7 +134,7 @@ void deplacement()
 
       float position_lin_cm[2];
 
-      position_lin_cm = tick_to_cm(*compteur_ticks);
+      //position_lin_cm = tick_to_cm(compteur_ticks[2]);
 
       position_lin=calcul_position_lin(compteur);
       position_rot= calcul_position_rot(compteur);
