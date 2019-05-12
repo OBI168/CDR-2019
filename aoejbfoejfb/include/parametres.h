@@ -12,8 +12,8 @@ float Kd_rot=0;
 
 float vitesse_max = 40;     // en cm/s
 float acceleration_max =10;  //en cm/s^2
-float PWM_max = 100;
-float PWM_min=60;
+float PWM_max = 60;
+float PWM_min=70;
 float periode = 5; //période de calcul asservissement en ms
 
 

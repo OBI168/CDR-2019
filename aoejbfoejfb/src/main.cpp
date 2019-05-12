@@ -22,19 +22,13 @@ void setup()
 
 void loop()
 {
+    // MD.avancer(70);
+    // MG.avancer(70);
+    // Serial.print(" ticksG:  ");
+    // Serial.print(compteur_ticks[0]);
+    // Serial.print(" ticksD:  ");
+    // Serial.print(compteur_ticks[1]);
 
-  Serial.print(consigne_ticks);
-  Serial.print("  ");
-  Serial.print(compteur_ticks[0]);
-  Serial.print("  ");
-  Serial.print(compteur_ticks[1]);
-  Serial.print("  ");
-  Serial.print(erreur_lin[1]);
-  Serial.print("  ");
-  Serial.print(commande_lin);
-  Serial.print("  ");
-  Serial.print(commande_PWM_G[1]);
-  Serial.print("  ");
-  Serial.println(commande_PWM_D[1]);
-  delay(100);
+
+Serial.println(" ");
 }
