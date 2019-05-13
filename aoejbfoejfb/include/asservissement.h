@@ -36,7 +36,7 @@ float erreur_rot[2]={0,0};  // liste qui contient l'erreur de rotation à l'inst
 float consigne_lin=5; // consigne de la distance rectiligne en cm
 float consigne_rot=0; // cosigne d'angle en degré
 
-float consigne_ticks = 800;
+float consigne_ticks = 4000;
 
 float commande_mot_Dt;
 float commande_mot_Gt;
@@ -56,7 +56,8 @@ calcul l'angle de rotation du robot en
 */
 float calcul_position_rot(float liste[2])
 {
-  return (liste[1]+liste[0])/2;
+
+  return (liste[1]-liste[0]);
   //180*(atan(liste[2]-liste[1])/entraxe)/pi;
 }
 
@@ -65,7 +66,7 @@ calcul la position du robot
 */
 float calcul_position_lin(float liste[2])
 {
-  return abs(liste[1]-liste[0]);
+  return (liste[1]+liste[0])/2;
 }
 
 /*
@@ -132,16 +133,18 @@ void deplacement()
     float commande_lin=0;
     float commande_rot=0;
 
-
-      // Serial.print(consigne_ticks);
-      // Serial.print("  position: "),
-      // Serial.print(position_lin);
-      // Serial.print(" ticksG:  ");
-      // Serial.print(compteur_ticks[0]);
-      // Serial.print(" ticksD:  ");
-      // Serial.print(compteur_ticks[1]);
-      // Serial.print(" errLin: ");
-      // Serial.print(new_erreur_lin);
+      Serial.print("consLin: ");
+      Serial.print(consigne_ticks);
+      Serial.print(" posLin: "),
+      Serial.print(position_lin);
+      Serial.print(" errLin: ");
+      Serial.print(new_erreur_lin);
+      Serial.print(" consRot: ");
+      Serial.print(consigne_rot);
+      Serial.print("  posRot: "),
+      Serial.print(position_rot);
+      Serial.print("  errRot: ");
+      Serial.print(new_erreur_rot);
 
       // float commande_lin;
       // float commande_rot;
@@ -165,34 +168,36 @@ void deplacement()
       der_erreur_rot = calcul_derive(erreur_rot);
 
       commande_lin = Kp_lin*erreur_lin[1] + Ki_lin*int_erreur_lin + Kd_lin*der_erreur_lin;
-      //commande_rot = Kp_rot*erreur_rot[1] + Ki_rot*int_erreur_rot + Kd_rot*der_erreur_rot;
+      commande_rot = Kp_rot*erreur_rot[1] + Ki_rot*int_erreur_rot + Kd_rot*der_erreur_rot;
+
+      Serial.print(" cmdRot: ");
+      Serial.print(commande_rot);
 
 
-
-      commande_mot_Dt = commande_lin; //+ commande_rot/2;
-      commande_mot_Gt = commande_lin; //- commande_rot/2;
+      commande_mot_Dt = commande_lin + commande_rot/2;
+      commande_mot_Gt = commande_lin - commande_rot/2;
 
 
       maj_data(commande_mot_D, commande_mot_Dt);
       maj_data(commande_mot_G, commande_mot_Gt);
 
-      //Serial.print("  cmdNNsat; ");
-      //Serial.print(commande_mot_D[1]);
+      // Serial.print("  cmdNNsat; ");
+      // Serial.print(commande_mot_D[1]);
 
       commande_mot_Dt = saturation_acc(commande_mot_D);
       commande_mot_Gt = saturation_acc(commande_mot_G);
 
-      //Serial.print("  cmdSat: ");
-      //Serial.print(commande_mot_Dt);
+      // Serial.print("  cmdSat: ");
+      // Serial.print(commande_mot_Dt);
 
       commande_PWM_Dt = constrain(commande_to_PWM(commande_mot_Dt), -PWM_max, PWM_max);
       commande_PWM_Gt = constrain(commande_to_PWM(commande_mot_Gt), -PWM_max, PWM_max);
 
 
-      // Serial.print("  cmdG: ");
-      // Serial.print(commande_mot_Gt);
-      // Serial.print("  cmdD: ");
-      // Serial.println(commande_mot_Dt);
+      Serial.print(" cmdG: ");
+      Serial.print(commande_mot_Gt);
+      Serial.print(" cmdD: ");
+      Serial.println(commande_mot_Dt);
 
 
 
@@ -217,5 +222,5 @@ void deplacement()
         MG.reculer(abs(commande_PWM_G[1]));
       }
 
-      //Serial.println(" ");
+      Serial.println(" ");
 }

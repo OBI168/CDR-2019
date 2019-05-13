@@ -12,6 +12,7 @@ void InterruptionCodeurDroit_A()
   {
     if (Etat_A==0)
     {
+      compteur_ticks[1]--;//recule
     }
     else
     {

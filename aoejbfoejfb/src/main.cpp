@@ -30,5 +30,7 @@ void loop()
     // Serial.print(compteur_ticks[1]);
 
 
-Serial.println(" ");
+
+
+//Serial.println(" ");
 }
