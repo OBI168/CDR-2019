@@ -1,10 +1,7 @@
-
 #include <Arduino.h>
-#include "asservissement.h"
-#include <TimerThree.h>
+#include<TimerThree.h>
+#include <asservissement.h>
 
-
-bool test;
 
 void setup()
 {

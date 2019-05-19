@@ -1,8 +1,10 @@
+
 #include <Arduino.h>
-#include <pins.h>
-#include <parametres.h>
+#include <configuration.h>
+
 
 float compteur_ticks[2];
+
 
 void InterruptionCodeurDroit_A()
 {
