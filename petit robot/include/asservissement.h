@@ -25,6 +25,7 @@ float commande_PWM_D[2]={0,0};  // commande du moteur droit en PWM
 float commande_PWM_G[2]={0,0};
 
 
+
 float vit_trap;
 float vit_trapeze[2]={0,0};
 float vit[2]={0,0};
@@ -35,18 +36,20 @@ float cons_rot[2];
 float cons_rot_t;
 
 
+
+
 float erreur_lin[2]={0,0}; // liste qui contient l'erreur linéaire à l'instant n et n-1
 float erreur_rot[2]={0,0};  // liste qui contient l'erreur de rotation à l'instant n et n-1
 
 float consigne_lin=5; // consigne de la distance rectiligne en cm
-float consigne_rot=0; // cosigne d'angle en degré
+float consigne_rot=600; // cosigne d'angle en degré
 
-float consigne_ticks = 2000;
+float consigne_ticks = 0;  // ne pas mettre 0 car on divise par consigne_ticks
 
 float commande_mot_Dt;
 float commande_mot_Gt;
 
-float norme_com = Kp_lin;//(consigne_ticks+consigne_rot)*(Kp_lin*(1-1/3)+Kp_rot*(1-1/3));
+float norme_com = 6200;//(consigne_ticks+consigne_rot)*(Kp_lin*(1-1/3)+Kp_rot*(1-1/3));
 
 
 
@@ -58,7 +61,7 @@ float calcul_position_lin(float liste[2])
 
 float calcul_position_rot(float liste[2])
 {
-  return liste[1]-liste[2];
+  return liste[1]-liste[0];
 }
 
 /*
@@ -83,7 +86,7 @@ float calcul_erreur(float consigne, float position)
 
 float commande_to_PWM(float commande)
 {
-  return commande/norme_com*PWM_max;
+  return commande/norme_com*PWM_max +60;
 }
 
 float distance_freinage(float vit)
@@ -94,9 +97,10 @@ float distance_freinage(float vit)
 
 float trapeze_lin(float liste[2], float Dfrein)
 {
-  if(liste[0]<Dfrein) //phase de freinage
+
+  if(abs(liste[0])<Dfrein) //phase de freinage
   {
-      Serial.println("FREIN");
+    Serial.println("FREIN");
     return cons_lin[1]-Afrein;
 
   }
@@ -119,8 +123,6 @@ float trapeze_lin(float liste[2], float Dfrein)
   }
 }
 
-
-
 float trapeze_rot(float liste[2], float Dfrein)
 {
   if(abs(liste[0])<Dfrein) //phase de freinage
@@ -131,14 +133,11 @@ float trapeze_rot(float liste[2], float Dfrein)
   {
     return cons_lin[1]+Amax_rot;
   }
-  else if (cons_rot[1]>=Vmax_rot && liste[0] >Dfrein) //phase de plateau
+  else if (cons_rot[1]>=Vmax_rot && liste[0]>Dfrein) //phase de plateau
   {
     return Vmax_rot;
   }
-  else if (liste[0]==-0)
-  {
-    return 0;
-  }
+
 }
 
 
@@ -165,8 +164,6 @@ float saturation(float liste[2], float saturation)
 void deplacement()
 
 {
-
-
     float position_lin_t;
     float position_lin[2];
 
@@ -180,8 +177,7 @@ void deplacement()
     float commande_PWM_Gt=0;
 
     float commande_lin=0;
-    float commande_rot_t=0;
-    float commande_rot[2];
+    float commande_rot=0;
     float vit_consigne_lin_t=0;
     float vit_consigne_rot_t=0;
     float dist_frein_lin;
@@ -209,34 +205,21 @@ void deplacement()
     new_erreur_rot = calcul_erreur(consigne_rot, position_rot[0]); //consine finale
     maj_data(erreur_rot, new_erreur_rot);
 
-    vit_consigne_lin_t=calcul_derive(erreur_rot);
+    vit_consigne_rot_t=calcul_derive(erreur_rot);
     dist_frein_rot=distance_freinage(vit_consigne_rot_t);
 
-    cons_rot_t=(trapeze_rot(erreur_rot, dist_frein_rot));
+    //cons_rot_t=(trapeze_rot(erreur_rot, dist_frein_rot));
     maj_data(cons_rot, cons_rot_t);
-
 
 
       Serial.print("consLin: ");
       Serial.print(consigne_ticks);
-      Serial.print(" posLin: "),
-      Serial.print(position_lin_t);
-      Serial.print(" erreurRot: ");
+      Serial.print(" erreurLin: ");
+      Serial.print(new_erreur_lin);
+      Serial.print(" positionRot: ");
+      Serial.print(position_rot[0]);
+      Serial.print(" erreur_rot: ");
       Serial.print(new_erreur_rot);
-      Serial.print(" consLin: ");
-      Serial.print(cons_lin_t);
-      Serial.print(" consRot: ");
-      Serial.print(cons_rot_t);
-
-
-      // float commande_lin;
-
-      // float commande_rot;
-
-      //tick_to_cm(compteur_ticks, cm);
-
-
-
 
       int_erreur_lin = calcul_integrale(cons_lin);
       der_erreur_lin = calcul_derive(cons_lin);
@@ -244,21 +227,34 @@ void deplacement()
       int_erreur_rot = calcul_integrale(cons_rot);
       der_erreur_rot = calcul_derive(cons_rot);
 
-      commande_lin = Kp_lin*cons_lin[0] + Ki_lin*int_erreur_lin + Kd_lin*der_erreur_lin;
-      commande_rot_t = Kp_rot*cons_rot[0] + Ki_rot*int_erreur_rot + Kd_rot*der_erreur_rot;
+      if(consigne_ticks==0)
+      {
+        cons_lin[0]= cons_lin[0]*PWM_max;
+      }
+      else
+      {
+        cons_lin[0]= cons_lin[0]*PWM_max/(consigne_ticks);
+      }
+
+      if(consigne_rot==0)
+      {
+        erreur_rot[0]=erreur_rot[0]*PWM_max;
+      }
+      else
+      {
+      erreur_rot[0]= erreur_rot[0]*PWM_max/(consigne_rot);
+      }
 
 
-      maj_data(commande_rot,commande_rot_t);
-
-      commande_rot_t=saturation(commande_rot, vit_rot_max);
-
-
-      Serial.print(" cmdRot: ");
-      Serial.print(commande_rot_t);
+      commande_lin = Kp_lin*cons_lin[0]/2 + Ki_lin*int_erreur_lin + Kd_lin*der_erreur_lin;
+      commande_rot = Kp_rot*erreur_rot[0] + Ki_rot*int_erreur_rot + Kd_rot*der_erreur_rot;
 
 
-      commande_mot_Dt = commande_lin + commande_rot_t/2;
-      commande_mot_Gt = commande_lin - commande_rot_t/2;
+      Serial.print(" comRot: ");
+      Serial.print(commande_rot);
+
+      commande_mot_Dt = commande_lin + commande_rot/2;
+      commande_mot_Gt = commande_lin - commande_rot/2;
 
 
       maj_data(commande_mot_D, commande_mot_Dt);
@@ -273,14 +269,16 @@ void deplacement()
       avD=positif(commande_mot_Dt);
       avG=positif(commande_mot_Gt);
 
-      commande_PWM_Dt = constrain(commande_to_PWM(commande_mot_Dt), PWM_min, PWM_max);
-      commande_PWM_Gt = constrain(commande_to_PWM(commande_mot_Gt), PWM_min, PWM_max);
+      commande_PWM_Dt= commande_to_PWM(commande_mot_Dt);
+      commande_PWM_Gt= commande_to_PWM(commande_mot_Gt);
 
+      float commande_sat_D = constrain(commande_PWM_Dt, PWM_min, PWM_max);
+      float commande_sat_G = constrain(commande_PWM_Gt, PWM_min, PWM_max);
 
       Serial.print(" cmdG: ");
-      Serial.print(commande_PWM_Dt);
+      Serial.print(commande_mot_Dt);
       Serial.print(" cmdD: ");
-      Serial.println(commande_PWM_Gt);
+      Serial.println(commande_mot_Gt);
 
       maj_data(commande_PWM_D, commande_PWM_Dt);
       maj_data(commande_PWM_G, commande_PWM_Gt);
@@ -292,22 +290,34 @@ void deplacement()
       //   Serial.println("coucou");
       // }
 
-      if(avD)
-      {
-        MD.avancer(abs(commande_PWM_D[0]));
-      }
-      else
-      {
-        MD.reculer(abs(commande_PWM_D[0]));
-      }
 
-      if (avG)
+
+      if (abs(erreur_lin[0])>30 && abs(erreur_rot[0])>10)
       {
-        MG.avancer(abs(commande_PWM_G[0]));
+        Serial.println("GOOOOO");
+        if(avD)
+        {
+          MD.avancer(abs(commande_sat_D));
+        }
+        else
+        {
+          MD.reculer(abs(commande_sat_D));
+        }
+
+        if (avG)
+        {
+          MG.avancer(abs(commande_sat_G));
+        }
+        else
+        {
+          MG.reculer(abs(commande_sat_G));
+        }
       }
-      else
+      else if((abs(erreur_lin[0])<30 && abs(erreur_rot[0])<10) || commande_mot_Dt==0)
       {
-        MG.reculer(abs(commande_PWM_G[0]));
+        MD.arret();
+        MG.arret();
+        Serial.println("PROUT");
       }
 
       Serial.println(" ");
