@@ -1,10 +1,7 @@
-
 #include <Arduino.h>
-#include "asservissement.h"
-#include <TimerThree.h>
+#include<TimerThree.h>
+#include <asservissement.h>
 
-
-bool test;
 
 void setup()
 {
@@ -15,16 +12,19 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(CodeurGauche_B), InterruptionCodeurGauche_B, CHANGE);
 
   Timer3.initialize(200000); // l'interuption timer se déclenchera toute les 0.2s
-  Timer3.attachInterrupt(deplacement);
+  //Timer3.attachInterrupt(deplacement);
 }
 
 void loop()
-{
-    // MD.avancer(70);
-    // MG.avancer(70);
-    // Serial.print(" ticksG:  ");
-    // Serial.print(compteur_ticks[0]);
-    // Serial.print(" ticksD:  ");
-    // Serial.print(compteur_ticks[1]);
-    // Serial.println(" ");
-}
+ {
+    MD.avancer(120);
+    MG.avancer(120);
+    Serial.print(" ticksG:  ");
+    Serial.print(compteur_ticks[0]);
+    Serial.print(" ticksD:  ");
+    Serial.print(compteur_ticks[1]);
+    float rot = calcul_position_rot(compteur_ticks);
+    Serial.print(" posRot; ");
+    Serial.print(rot);
+    Serial.println(" ");
+ }

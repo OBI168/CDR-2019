@@ -17,8 +17,8 @@ void setup()
 
 void loop()
  {
-    MD.avancer(74);
-    MG.avancer(80);
+    MD.avancer(120);
+    MG.avancer(120);
     Serial.print(" ticksG:  ");
     Serial.print(compteur_ticks[0]);
     Serial.print(" ticksD:  ");
