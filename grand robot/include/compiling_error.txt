@@ -1,0 +1,4 @@
+/Users/aubinheissler/Documents/PlatformIO/Projects/CDR-2019/grand robot/include/asservissement.h:1:10: fatal error: 'Arduino.h' file not found
+#include <Arduino.h>
+         ^~~~~~~~~~~
+1 error generated.
