@@ -16,6 +16,12 @@
 #define MoteurGauche_2  37
 #define PWMMoteurGauche 11
 
+#define SharpAV1 A0
+#define SharpAV2 A1
+#define SharpAR1 A2
+#define SharpAR2 A3
+
+
  #define start 44
 
 #endif

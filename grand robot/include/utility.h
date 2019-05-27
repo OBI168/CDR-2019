@@ -27,7 +27,7 @@ float deg_to_rad(float angle)
 float calcul_cons_rot(float cons)
   {
   float angle_deg = deg_to_rad(cons);
-  return entraxe*sin(angle_deg);
+  return (entraxe/resolution)*sin(angle_deg);
   }
 /*
 calcul la somme d'une liste de deux éléments

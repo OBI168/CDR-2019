@@ -3,6 +3,7 @@
 #include <moteur.h>
 #include <math.h>
 #include <utility.h>
+#include <sharp.h>
 
     /*définition des objets moteurs */
 Moteur MD(MoteurDroit_1,MoteurDroit_2,PWMMoteurDroit);
@@ -25,10 +26,10 @@ float position_rot[2];
 float erreur_lin[2];
 float erreur_rot[2];
 
-float cons_distance = 0;
+float cons_distance = 50;
 float distance = cm_to_ticks(cons_distance);
 
-float cons_ang = 45;
+float cons_ang = 0;
 float angle = calcul_cons_rot(cons_ang);
 
 
@@ -140,66 +141,87 @@ float trapeze_rot(float liste[2], float Dfrein, float erreur)
   {
     if(erreur<0)
     {
-    Serial.println(" ACCELERATION");
-    return -abs(cons_rot[1]+Amax_rot);
-  }
-  else
-  {
-  Serial.println(" ACCELERATION");
-  return abs(cons_rot[1]+Amax_rot);
-  }
-
+      Serial.println(" ACCELERATION");
+      return -abs(cons_rot[1]+Amax_rot);
+    }
+    else
+    {
+      Serial.println(" ACCELERATION");
+      return abs(cons_rot[1]+Amax_rot);
+    }
   }
   else if (cons_rot[1]>=Vmax && liste[0]>Dfrein) //phase de plateau
   {
     if(erreur<0)
     {
-    Serial.println("CONSTANT");
-    return -Vmax_rot;
+      Serial.println("CONSTANT");
+      return -Vmax_rot;
     }
-    else
-    Serial.println("CONSTANT");
-    return Vmax_rot;
+      else
+      {
+      Serial.println("CONSTANT");
+      return Vmax_rot;
+      }
     }
   else if (abs(erreur)<precision_rot)
   {
+    //Serial.println("OOOKKKKK");
     return 0;
   }
 }
 
-void deplacement(boolean aD, float comPWM_D, boolean aG, float comPWM_G)
+void deplacement(boolean aD, float comPWM_D, boolean aG, float comPWM_G, float comRot, float erreurRot)
 {
-  if (/*(abs(erreur_lin[0])>precision_lin) && */abs(erreur_rot[0])>precision_rot)// && commande_lin!=0)
   {
-    if(aD)
-    {
-      MD.avancer(abs(comPWM_D));
-    }
-    else
-    {
-      MD.reculer(abs(comPWM_D));
-    }
+  if ((abs(erreurRot)>precision_rot) || (abs(erreur_lin[0]>precision_lin)))
+  {
+      Serial.println("GOOOOOOOO");
+      if(aD)
+      {
+        if (Detection_obstacle_AV())
+        {
+          MD.arret();
+          MG.arret();
+          Serial.println("Stop1");
+        }
+        else
+        {
+          MD.avancer(abs(comPWM_D));
+        }
+      }
+      else
+      {
+        MD.reculer(abs(comPWM_D));
+      }
 
-    if (aG)
-    {
-      MG.avancer(abs(comPWM_G));
+      if (aG)
+      {
+        if (Detection_obstacle_AV())
+        {
+          MD.arret();
+          MG.arret();
+          Serial.println("Stop2");
+        }
+        else
+        {
+          MG.avancer(abs(comPWM_G));
+        }
+      }
+      else
+      {
+        MG.reculer(abs(comPWM_G));
+      }
     }
-    else
-    {
-      MG.reculer(abs(comPWM_G));
-    }
-  }
-  else if(/*(abs(erreur_lin[0])<precision_lin) &&*/ abs(erreur_rot[0])<precision_rot)  //|| commande_lin==0)
+    else if((abs(erreurRot)<precision_rot) && (abs(erreur_lin[0]<precision_lin)))
   {
     Serial.println("STOP");
     MD.arret();
     MG.arret();
   }
 }
-
+}
 
 void asservissement()
-
 {
     // while(!start)
     // {
@@ -265,8 +287,8 @@ void asservissement()
         cons_rot_t=trapeze_rot(erreur_rot, dist_frein_rot, erreur_rot[0]);
         maj_data(cons_rot, cons_rot_t);
 
-        Serial.print("consLin: ");
-        Serial.print(distance);
+        // Serial.print("consLin: ");
+        // Serial.print(distance);
         Serial.print(" erreurLin: ");
         Serial.print(erreur_lin[0]);
         Serial.print(" erreurRot: ");
@@ -281,16 +303,18 @@ void asservissement()
         int_erreur_rot = calcul_integrale(cons_rot);
         der_erreur_rot = calcul_derive(cons_rot);
 
-        commande_lin = Kp_lin*cons_lin[0]/4 + Ki_lin*int_erreur_lin + Kd_lin*der_erreur_lin;
+        commande_lin = Kp_lin*cons_lin[0]/2 + Ki_lin*int_erreur_lin + Kd_lin*der_erreur_lin;
         commande_rot = Kp_rot*cons_rot[0] + Ki_rot*int_erreur_rot + Kd_rot*der_erreur_rot;
 
-        Serial.print(" comLin: ");
-        Serial.print(commande_lin);
+        // Serial.print(" comLin: ");
+        // Serial.print(commande_lin);
+        Serial.print(" angle: ");
+        Serial.print(angle);
         Serial.print(" comRot: ");
         Serial.print(commande_rot);
 
-        commande_mot_Dt = /*commande_lin*/ -  commande_rot/2;
-        commande_mot_Gt = /*commande_lin + */commande_rot/2;
+        commande_mot_Dt = commande_lin -  commande_rot/2;
+        commande_mot_Gt = commande_lin + commande_rot/2;
 
         maj_data(commande_mot_D, commande_mot_Dt);
         maj_data(commande_mot_G, commande_mot_Gt);
@@ -309,7 +333,7 @@ void asservissement()
         maj_data(commande_PWM_D, commande_PWM_Dt);
         maj_data(commande_PWM_G, commande_PWM_Gt);
 
-        deplacement(avD,commande_PWM_D[0], avG, commande_PWM_G[0]);
+        deplacement(avD,commande_PWM_D[0], avG, commande_PWM_G[0], commande_rot, erreur_rot[0]);
         Serial.println(" ");
       //}
 }

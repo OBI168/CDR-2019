@@ -25,12 +25,12 @@ void setup()
 
 void loop()
  {
-    //boolean sign =digitalRead(start);
-
+//     boolean sign =digitalRead(start);
+//
 //     while(!sign)
 // {
-    // MD.avancer(90);
-    // MG.avancer(90);
+    // MD.avancer(120);
+    // MG.avancer(120);
     // Serial.print(" ticksG:  ");
     // Serial.print(compteur_ticks[0]);
     // Serial.print(" ticksD:  ");
